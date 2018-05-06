@@ -3,8 +3,11 @@
 
 #include "matrix.h"
 #include "ml6.h"
+#include "gmath.h"
+#include "display.h"
 #include <time.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 void add_point(struct matrix *points,
 	       double x, double y, double z);
@@ -21,7 +24,7 @@ void draw_lines(struct matrix *points, screen s, color c, depthmap d);
 void draw_line(struct matrix *points, int pos, screen s, color c, depthmap d);
 
 
-int draw_polygons(struct matrix *points, screen s, color c, depthmap d);
+int draw_polygons(struct matrix *points, screen s, color c, depthmap d, struct lprops *light);
 int draw_polygon(struct matrix *points, int pos, screen s, color c, depthmap d);
 int draw_filled_triangle(struct matrix *points, int pos, screen s, color c, depthmap d);
 

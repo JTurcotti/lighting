@@ -1,11 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "ml6.h"
-#include "gmath.h"
-#include "display.h"
 #include "draw.h"
-#include "matrix.h"
 
 //function of step2:
 #define OFFSET 0 //(double) rand() / (double) RAND_MAX
@@ -239,16 +232,9 @@ int draw_polygon(struct matrix *points, int pos, screen s, color c, depthmap d) 
   
   return 1;
 }
-
 int draw_filled_triangle(struct matrix *points, int pos,
 			 screen s, color c, depthmap d) {
-  double view_angle[3] = {0, 0, 1};
-  
-  if (dot_product(view_angle, calculate_normal(points, pos)) > 0) {
-    return 0;
-  }
 
-  
   int *left, *middle, *right;
   int p0[3] = {points->m[0][pos], points->m[1][pos], points->m[2][pos]};
   int p1[3] = {points->m[0][pos+1], points->m[1][pos+1], points->m[2][pos+1]};
@@ -331,12 +317,8 @@ int draw_filled_triangle(struct matrix *points, int pos,
     
   return 1;
 }
+
   
-int min(int a, int b) {
-  return a>b? b: a;
-}
-
-
 /*======== int draw_polygons() =======
   Inputs: struct matrix * points
           screen s, color c
@@ -344,23 +326,30 @@ int min(int a, int b) {
 
   go thru points 3 each and draw corresponding polygon
   ==================*/
-int draw_polygons(struct matrix *points, screen s, color c, depthmap d) {
-  int r0 = min(COLOR_VAR, c.red);
+int draw_polygons(struct matrix *points, screen s, color c, depthmap d, struct lprops *light) {
+  /*  int r0 = min(COLOR_VAR, c.red);
   int r1 = min(COLOR_VAR, 256 - c.red);
   int g0 = min(COLOR_VAR, c.green);
   int g1 = min(COLOR_VAR, 256 - c.green);
   int b0 = min(COLOR_VAR, c.blue);
   int b1 = min(COLOR_VAR, 256 - c.blue);
-  int j = rand() % 32;
+  int j = rand() % 32;*/
   
   int i;
   int count = 0;
   color c2;
+
   for (i = 0; i < (points->lastcol + 1) / 3; i++) {
-    c2 = get_color(c.red + ((263 * i + j) % (r0 + r1)) - r0,
-		   c.green + ((149 * i + j) % (g0 + g1)) - g0,
-		   c.blue + ((257 * i + j) % (b0 + b1)) - b0);
-    count += draw_filled_triangle(points, 3 * i, s, c2, d);
+    double *normal = calculate_normal(points, 3 * i);
+
+    if (vdot(light->view, normal) > 0) {
+      /*c2 = get_color(c.red + ((263 * i + j) % (r0 + r1)) - r0,
+	c.green + ((149 * i + j) % (g0 + g1)) - g0,
+	c.blue + ((257 * i + j) % (b0 + b1)) - b0);*/
+
+      c2 = get_lighting(normal, light);
+      count += draw_filled_triangle(points, 3 * i, s, c2, d);
+    }
   }
 
   return count;
@@ -463,12 +452,12 @@ void add_box(struct matrix *points, double x0, double y0, double z0, double x_de
 
       add_polygon(points,
   		  vertices[0][0], vertices[0][1], vertices[0][2],
-  		  vertices[2][0], vertices[2][1], vertices[2][2],
-  		  vertices[1][0], vertices[1][1], vertices[1][2]);
-      add_polygon(points,
-  		  vertices[3][0], vertices[3][1], vertices[3][2],
   		  vertices[1][0], vertices[1][1], vertices[1][2],
   		  vertices[2][0], vertices[2][1], vertices[2][2]);
+      add_polygon(points,
+  		  vertices[3][0], vertices[3][1], vertices[3][2],
+  		  vertices[2][0], vertices[2][1], vertices[2][2],
+  		  vertices[1][0], vertices[1][1], vertices[1][2]);
     }
   }
 }
@@ -509,12 +498,12 @@ void add_sphere(struct matrix *points, double cx, double cy, double cz, double r
       double *point4 = sphere_cartesian(cx, cy, cz, r, phi + step, theta + step);
       add_polygon(points,
 		  point1[0], point1[1], point1[2],
-		  point2[0], point2[1], point2[2],
-		  point3[0], point3[1], point3[2]);
+		  point3[0], point3[1], point3[2],
+		  point2[0], point2[1], point2[2]);
       add_polygon(points,
 		  point3[0], point3[1], point3[2],
-		  point2[0], point2[1], point2[2],
-		  point4[0], point4[1], point4[2]);
+		  point4[0], point4[1], point4[2],
+		  point2[0], point2[1], point2[2]);
     }
   }
 }
@@ -533,12 +522,12 @@ void add_torus(struct matrix *points, double cx, double cy, double cz, double r,
       double *point4 = torus_cartesian(cx, cy, cz, r, R, phi + step, theta + step);
       add_polygon(points,
 		  point1[0], point1[1], point1[2],
-		  point2[0], point2[1], point2[2],
-		  point3[0], point3[1], point3[2]);
+		  point3[0], point3[1], point3[2],
+		  point2[0], point2[1], point2[2]);
       add_polygon(points,
 		  point3[0], point3[1], point3[2],
-		  point2[0], point2[1], point2[2],
-		  point4[0], point4[1], point4[2]);
+		  point4[0], point4[1], point4[2],
+		  point2[0], point2[1], point2[2]);
     }
   }
 }

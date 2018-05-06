@@ -6,13 +6,7 @@ A color is an ordered triple of ints, with each value standing
 for red, green and blue respectively
 ==================================================*/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
-#include "ml6.h"
 #include "display.h"
-
 
 /*======== void plot() ==========
 Inputs:   screen s
@@ -158,3 +152,10 @@ color get_color(int r, int g, int b) {
   return c;
 }
 
+char *toString(color c) {
+  char *out = malloc(32);
+  sprintf(out, "{%d, %d, %d}", c.red, c.green, c.blue);
+  return out;
+}
+
+  

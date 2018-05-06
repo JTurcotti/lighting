@@ -10,7 +10,6 @@
 #include "draw.h"
 #include "matrix.h"
 #include "parser.h"
-#inclyde "preparser.h"
 
 /*======== void parse_file () ==========
 Inputs:   char * filename 
@@ -91,6 +90,22 @@ void parse_file ( char * input) {
   clear_screen(s, back);
   clear_depthmap(d);
 
+  double location[3] = {0, 100, 0};
+  double *direction = normalize(vcopy(location));
+  double view[3] = {0, 0, 100};
+  struct lprops light = (struct lprops) {
+    .location = location, //location light is coming from;
+    .direction = direction, //direction light is coming from
+    .view = normalize(view), //direction viewer is looking from
+    
+    .color = get_color(255, 255, 255), //light source color
+    .acolor = get_color(255, 255, 255), //ambient light color
+
+    .areflect = get_color(0, 64, 128), //ambient reflection
+    .dreflect = get_color(0, 126, 0), //diffuse reflection
+    .sreflect = get_color(256, 0, 0)  //specular refection
+  };
+  
   if ( strcmp(input, "stdin") == 0 ) 
     f = stdin;
   else
@@ -139,7 +154,7 @@ void parse_file ( char * input) {
 	add_polygon(polygons, args[0], args[1], args[2], args[3], args[4],
 		    args[5], args[6], args[7], args[8]);
       }
-      draw_polygons(matrix_mult(peek(stack), polygons), s, c, d);
+      draw_polygons(matrix_mult(peek(stack), polygons), s, c, d, &light);
       free(args);
       free(polygons);
     } else if (!strcmp(line, "box")) {
@@ -152,7 +167,7 @@ void parse_file ( char * input) {
       } else {
 	add_box(polygons, args[0], args[1], args[2], args[3], args[4], args[5]);
       }
-      draw_polygons(matrix_mult(peek(stack), polygons), s, c, d);
+      draw_polygons(matrix_mult(peek(stack), polygons), s, c, d, &light);
       free(args);
     } else if (!strcmp(line, "sphere")) {
       double *args = malloc(4 * sizeof(double));
@@ -162,9 +177,9 @@ void parse_file ( char * input) {
 	  ((nargs = sscanf(argline, "%lf %lf %lf %lf", args, args+1, args+2, args+3)) != 4)) {
 	printf("Error: 'sphere' requires 4 arguments of type double, found %d\n", nargs);
       } else {
-	add_sphere(polygons, args[0], args[1], args[2], args[3], STEP_SIZE * 5);
+	add_sphere(polygons, args[0], args[1], args[2], args[3], STEP_SIZE);
       }
-      draw_polygons(matrix_mult(peek(stack), polygons), s, c, d);
+      draw_polygons(matrix_mult(peek(stack), polygons), s, c, d, &light);
       free(args);
     } else if (!strcmp(line, "torus")) {
       double *args = malloc(5 * sizeof(double));
@@ -174,9 +189,9 @@ void parse_file ( char * input) {
 	  ((nargs = sscanf(argline, "%lf %lf %lf %lf %lf", args, args+1, args+2, args+3, args+4)) != 5)) {
 	printf("Error: 'torus' requires 5 arguments of type double, found %d\n", nargs);
       } else {
-	add_torus(polygons, args[0], args[1], args[2], args[3], args[4], STEP_SIZE * 3);
+	add_torus(polygons, args[0], args[1], args[2], args[3], args[4], STEP_SIZE);
       }
-      draw_polygons(matrix_mult(peek(stack), polygons), s, c, d);
+      draw_polygons(matrix_mult(peek(stack), polygons), s, c, d, &light);
       free(args);
     } else if (!strcmp(line, "circle")) {
       double *args = malloc(4 * sizeof(double));

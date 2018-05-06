@@ -8,6 +8,8 @@
 #define TAO 6.2832
 #define CONV PI / 180
 
+#include <math.h>
+
 
 struct matrix {
   double **m;
